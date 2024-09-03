@@ -1,3 +1,4 @@
+# exercice 0.5
 ```mermaid
 
 sequenceDiagram
@@ -29,4 +30,4 @@ sequenceDiagram
     Note right of browser: The browser executes the callback function that renders the notes
 
 ```
-### The website gave these GET requests as I refreshed the page in the developer view.
+### The website (https://studies.cs.helsinki.fi/exampleapp/spa) gave these GET requests as I refreshed the page in the developer view.
