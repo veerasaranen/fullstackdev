@@ -1,3 +1,4 @@
+# Exercice 0.6
 ```mermaid
 
 sequenceDiagram
