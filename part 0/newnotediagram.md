@@ -1,4 +1,4 @@
-# 
+# exercice 0.4
 ```mermaid
 %% for comments
 sequenceDiagram
