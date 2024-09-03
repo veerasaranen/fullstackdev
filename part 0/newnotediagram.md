@@ -12,7 +12,7 @@ sequenceDiagram
     server-->>browser: redirect to /exampleapp/notes
     deactivate server
 
-    Note right of browser: The server asks for a redirect from the browser and creates a new note object adding it to the array of notes.
+    Note right of browser: The server asks for a redirect from the browser and creates a new note object adding it to the array of notes. This reloads everything:
 
     browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
     activate server
