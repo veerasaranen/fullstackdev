@@ -9,7 +9,7 @@ sequenceDiagram
 
     browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
     activate server
-    server-->>browser: JSON
+    server-->>browser: The server does not redirect on single page apps
     deactivate server
 
 ```
