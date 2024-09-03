@@ -9,7 +9,7 @@ sequenceDiagram
 
     browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note
     activate server
-    server-->>browser: redirect to /notes
+    server-->>browser: redirect to /exampleapp/notes
     deactivate server
 
     Note right of browser: The server asks for a redirect from the browser and creates a new note object adding it to the array of notes.
