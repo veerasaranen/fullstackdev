@@ -5,6 +5,8 @@ sequenceDiagram
     participant browser
     participant server
 
+    Note right of browser: All the necessary data is retrieved from the server only once (when opening the page or refreshing)
+
     browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/spa
     activate server
     server-->>browser: HTML document
