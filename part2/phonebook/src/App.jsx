@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import SearchField from './components/search.jsx'
 import AddPeople from './components/addPeople.jsx'
 import People from './components/people.jsx'
-import axios from 'axios'
+import peopleService from './services/people.js'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -12,11 +12,11 @@ const App = () => {
   const [filtered, setNewFiltered] = useState(persons)
 
   const hook = () => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-        setNewFiltered(response.data)
+    peopleService
+      .getAll()
+      .then(initialPeople => {
+        setPersons(initialPeople)
+        setNewFiltered(initialPeople)
       })
   }
 
@@ -30,15 +30,33 @@ const App = () => {
       const personObject = {
         name: newName,
         number: newNumber,
-        id: persons.length + 1
       } 
-      setPersons(persons.concat(personObject))
-      setNewFiltered(filtered.concat(personObject))
-      setNewNumber("")
-      setNewName("")
+      peopleService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewFiltered(filtered.concat(returnedPerson))
+          setNewNumber("")
+          setNewName("")
+        })
 
     } else {
-      alert(`${newName} is already added to phonebook`)
+      //alert(`${newName} is already added to phonebook`), i commented the old exercice
+      if (window.confirm(`${newName} is already added to phonebook. Do you want to replace the old contact?`)) {
+        const changing = persons.find( person => person.name === newName )
+        const changedPerson = { ...changing, number: newNumber }
+        peopleService
+          .change(changedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(person => person.id !== changing.id ? person : returnedPerson))
+            setNewFiltered(filtered.map(person => person.id !== changing.id ? person : returnedPerson))
+            setNewNumber("")
+            setNewName("")
+          })
+      } else {
+        setNewNumber("")
+        setNewName("")
+      }
     }
   
   }
@@ -52,10 +70,20 @@ const App = () => {
   }
 
   const filterSearch = (event) => {
+    event.preventDefault()
     setNewSearch(event.target.value)
     const search = event.target.value.toLowerCase()
     const filteredPersons = persons.filter( person => person.name.toLowerCase().includes(search))
     setNewFiltered(filteredPersons)
+  }
+
+  const handleDelete = (person) => {
+    if (window.confirm(`Do you really want to delete ${person.name}?`)) {
+      peopleService
+        .deleting(person.id)
+      setPersons(persons.filter(dude => dude.id !== person.id))
+      setNewFiltered(filtered.filter(dude => dude.id !== person.id))
+    }
   }
 
   return (
@@ -65,7 +93,7 @@ const App = () => {
       <h3>Add a contact</h3>
       <AddPeople person={addPerson} name={newName} addName={handleNames} number={newNumber} addNumber={handleNumbers}/>
       <h3>Numbers</h3>
-      <People filteredList={filtered}/>
+      <People filteredList={filtered} deleting={handleDelete}/>
     </div>
   )
 }
