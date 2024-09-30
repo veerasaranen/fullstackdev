@@ -1,106 +1,79 @@
 import { useState, useEffect } from 'react'
-import Note from './components/Note'
-import Notification from './components/Notification'
-import noteService from './services/notes'
-
-const Footer = () => {
-  const footerStyle = {
-    color: 'green',
-    fontStyle: 'italic',
-    fontSize: 16
-  }
-  return (
-    <div style={footerStyle}>
-      <br />
-      <em>Note app, Department of Computer Science, University of Helsinki 2024</em>
-    </div>
-  )
-}
+import countryService from './services/countryService'
+import SearchResults from './components/searchResults'
 
 const App = () => {
-  const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState('')
-  const [showAll, setShowAll] = useState(true)
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [countries, setCountries] = useState([])
+  const [search, setSearch] = useState('')
+  const [results, setResults] = useState([])
+  const [country, setCountry] = useState(null)
+  const [weatherData, setWeather] = useState(null)
 
-  useEffect(() => {
-    noteService
-      .getAll()
-      .then(initialNotes => {
-        setNotes(initialNotes)
+  const api_key = import.meta.env.VITE_SOME_KEY
+
+  const hook = () => {
+    countryService
+      .get()
+      .then(countryList => {
+        setCountries(countryList)
+        setResults(countries.filter(country => country.name.common.toLowerCase().includes(search.toLowerCase())))
       })
-  }, [])
+  }
 
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      important: Math.random() > 0.5,
+  const weatherHook = () => {
+    if (country) {
+      console.log("here")
+      countryService
+        .getWeather(country, api_key)
+        .then(weather => {
+          console.log('weather', weather)
+          setWeather(weather)
+          console.log('weatherData', weatherData)
+        })
     }
-  
-    noteService
-      .create(noteObject)
-        .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-        setNewNote('')
-      })
   }
 
-  const toggleImportanceOf = id => {
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-  
-    noteService
-      .update(id, changedNote)
-        .then(returnedNote => {
-        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
-      })
-      .catch(error => {
-        setErrorMessage(
-          `Note '${note.content}' was already removed from server`
-        )
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 5000)
-      })
+  useEffect(hook, [search])
+  useEffect(weatherHook, [country])
+
+  const handleChange = (event) => {
+    event.preventDefault()
+    setSearch(event.target.value)
+    if (results.length === 1) {
+      console.log("country changed")
+      setCountry(results[0])
+    }
   }
 
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
+  const handleShowing = (country) => {
+    console.log("country changed")
+    setSearch(country.name.common)
+    setCountry(country.name.common)
   }
 
-  const notesToShow = showAll
-    ? notes
-    : notes.filter(note => note.important)
+  if (country) {
+  console.log('countryHERE', country.name.common)
+  console.log('weathreHERE',weatherData)
+  }
+
+  //console.log(results.length)
+/*    console.log(results.length)
+    if (results.length === 1) {
+      console.log("country changed")
+      setCountry(results[0])
+    }*/ 
 
   return (
     <div>
-      <h1>Notes</h1>
-      <Notification message={errorMessage} />
-      <div>
-        <button onClick={() => setShowAll(!showAll)}>
-          show {showAll ? 'important' : 'all' }
-        </button>
-      </div>      
-      <ul>
-        {notesToShow.map(note => 
-          <Note
-            key={note.id}
-            note={note}
-            toggleImportance={() => toggleImportanceOf(note.id)}
-          />
-        )}
-      </ul>
-      <form onSubmit={addNote}>
-      <input
-          value={newNote}
-          onChange={handleNoteChange}
-        />
-        <button type="submit">save</button>
-      </form> 
-      <Footer />
+      <h1>Find countries</h1>
+      <form>
+        Search:  
+        <input value={search} onChange={handleChange} />
+      </form>
+        <SearchResults list={results} show={handleShowing} weather={weatherData} />
     </div>
   )
+  
 }
 
 export default App
